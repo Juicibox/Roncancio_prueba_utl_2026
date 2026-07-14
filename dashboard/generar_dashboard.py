@@ -171,7 +171,7 @@ html = f"""
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Election Analytics Dashboard</title>
+<title>Dashboard</title>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <style>
 :root {{
@@ -322,8 +322,8 @@ button:hover {{
 
 <div class="header-container">
     <div>
-        <h1>🗳️ Análisis de Resultados Electorales</h1>
-        <p style="color: var(--text-muted); margin: 5px 0 0 0;">Análisis de resultados electorales • Boyacá</p>
+        <h1>🗳️ Análisis de Resultados Congreso </h1>
+        <p style="color: var(--text-muted); margin: 5px 0 0 0;">Resultados electorales • Boyacá 2026</p>
     </div>
     <button class="theme-toggle-btn" id="themeToggleBtn">🌙 Modo Oscuro</button>
 </div>
