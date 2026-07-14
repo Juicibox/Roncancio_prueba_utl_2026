@@ -214,3 +214,11 @@ El Top de candidatos en Cámara no necesariamente coincide con el Top de atribuc
 
 Por esta razón, un candidato con una alta votación en Cámara puede no recibir la mayor atribución en Senado si su partido tuvo un bajo desempeño en dicha corporación.
 
+### Exportación CSV 
+
+El dashboard permite exportar el Top 10 de candidatos del municipio seleccionado en formato CSV.
+
+### Boton Oscuro
+
+El dashboard permite escoger entre un tema modo oscuro y modo claro.
+

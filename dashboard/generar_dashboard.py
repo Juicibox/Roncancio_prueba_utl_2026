@@ -1,7 +1,7 @@
 from pathlib import Path
 import sqlite3
-from unittest import case
 import pandas as pd
+import json
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -48,7 +48,7 @@ ORDER BY
     votos DESC;
 """, conn)
 
-print(df_top10.head(15))
+# print(df_top10.head(15))
 
 df_lider = pd.read_sql("""
 WITH votos_partido AS (
@@ -75,7 +75,7 @@ FROM votos_partido
 ORDER BY municipio, votos DESC;
 """, conn)
 
-print(df_lider.head(10))
+# print(df_lider.head(10))
 
 df_ratio = pd.read_sql("""
 WITH votos_camara AS (
@@ -140,9 +140,7 @@ ORDER BY
     c.puesto;
 """, conn)
 
-print(df_ratio.head())
-
-import json
+# print(df_ratio.head())
 
 # -----------------------------
 # Convertir DataFrames a JSON
@@ -170,38 +168,69 @@ ratio_json = json.dumps(
 
 html = f"""
 <!DOCTYPE html>
-
 <html lang="es">
-
 <head>
-
 <meta charset="UTF-8">
-
 <title>Election Analytics Dashboard</title>
-
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-
 <style>
+:root {{
+    --bg-color: #f5f7fa;
+    --panel-bg: #ffffff;
+    --text-color: #1f2937;
+    --text-muted: #666666;
+    --card-shadow: rgba(0, 0, 0, 0.08);
+    --border-color: #e2e8f0;
+    --card-bg: #ffffff;
+    --lider-bg: #f8fafc;
+    --dropdown-bg: #ffffff;
+    --dropdown-text: #1f2937;
+}}
+
+[data-theme="dark"] {{
+    --bg-color: #0f172a;
+    --panel-bg: #1e293b;
+    --text-color: #f8fafc;
+    --text-muted: #94a3b8;
+    --card-shadow: rgba(0, 0, 0, 0.3);
+    --border-color: #334155;
+    --card-bg: #1e293b;
+    --lider-bg: #1e293b;
+    --dropdown-bg: #334155;
+    --dropdown-text: #f8fafc;
+}}
 
 body{{
     margin:0;
     padding:25px;
-    background:#f5f7fa;
+    background: var(--bg-color);
+    color: var(--text-color);
     font-family:Arial,Helvetica,sans-serif;
+    transition: background 0.3s, color 0.3s;
 }}
 
 h1{{
     margin:0;
-    color:#1f2937;
+    color: var(--text-color);
 }}
 
 h2{{
     margin-top:0;
+    color: var(--text-color);
 }}
 
 .container{{
     max-width:1400px;
     margin:auto;
+}}
+
+.header-container {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    margin-bottom: 15px;
 }}
 
 .cards{{
@@ -212,33 +241,71 @@ h2{{
 }}
 
 .card{{
-    background:white;
+    background: var(--card-bg);
+    color: var(--text-color);
     padding:20px;
     border-radius:12px;
-    box-shadow:0 3px 10px rgba(0,0,0,.08);
+    box-shadow:0 3px 10px var(--card-shadow);
     text-align:center;
+    transition: background 0.3s, box-shadow 0.3s;
 }}
 
 .card h3{{
     margin:0;
-    color:#666;
+    color: var(--text-muted);
 }}
 
 .card h1{{
     margin-top:10px;
+    color: var(--text-color);
 }}
 
 .panel{{
-    background:white;
+    background: var(--panel-bg);
     margin-top:20px;
     padding:20px;
     border-radius:12px;
-    box-shadow:0 3px 10px rgba(0,0,0,.08);
+    box-shadow:0 3px 10px var(--card-shadow);
+    transition: background 0.3s, box-shadow 0.3s;
+}}
+
+.controls-row {{
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
 }}
 
 select{{
-    padding:8px;
+    padding:8px 12px;
     font-size:16px;
+    background: var(--dropdown-bg);
+    color: var(--dropdown-text);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+}}
+
+button {{
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    background: #007C34;
+    color: white;
+    transition: opacity 0.2s, background 0.2s;
+}}
+
+button:hover {{
+    opacity: 0.9;
+}}
+
+.theme-toggle-btn {{
+    background: var(--panel-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
 }}
 
 #g1,#g2,#g3{{
@@ -247,18 +314,19 @@ select{{
 }}
 
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>🗳️ Análisis de Resultados Electorales </h1>
-
-<p style="color:#666">
-Análisis de resultados electorales • Boyacá
-</p>
+<div class="header-container">
+    <div>
+        <h1>🗳️ Análisis de Resultados Electorales</h1>
+        <p style="color: var(--text-muted); margin: 5px 0 0 0;">Análisis de resultados electorales • Boyacá</p>
+    </div>
+    <button class="theme-toggle-btn" id="themeToggleBtn">🌙 Modo Oscuro</button>
+</div>
 
 <div class="cards">
 
@@ -296,20 +364,24 @@ Análisis de resultados electorales • Boyacá
 
 <h2>Municipio</h2>
 
-<select id="municipio"></select>
-
-<br><br>
+<div class="controls-row">
+    <select id="municipio"></select>
+    <button id="exportCsvBtn">📥 Exportar Municipio a CSV</button>
+</div>
 
 <div id="liderCard"
 style="
-background:#f8fafc;
+background: var(--lider-bg);
 padding:18px;
 border-left:8px solid #007C34;
 border-radius:10px;
 margin-bottom:20px;
+border-top: 1px solid var(--border-color);
+border-right: 1px solid var(--border-color);
+border-bottom: 1px solid var(--border-color);
 ">
 
-<h3 style="margin:0;color:#666;">
+<h3 style="margin:0;color: var(--text-muted);">
 Partido líder Senado
 </h3>
 
@@ -349,32 +421,61 @@ Election Analytics Challenge • Dashboard desarrollado con Python, SQLite y Plo
 <script>
 
 const municipios = {municipios_json};
-
 const top10 = {top10_json};
-
 const lider = {lider_json};
-
 const ratio = {ratio_json};
-
 
 //=============================
 // Colores
 //=============================
 
 const colores = {{
-
     verde:"#007C34",
-
     pacto:"#7B2D8B",
-
     centro:"#1E477D",
-
     conservador:"#E07B00",
-
     gris:"#4B5563"
-
 }};
 
+//=============================
+// Tema Claro / Oscuro - Auxiliares
+//=============================
+
+function isDarkTheme() {{
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+}}
+
+function getTextColor() {{
+    return isDarkTheme() ? '#f8fafc' : '#1f2937';
+}}
+
+function getGridColor() {{
+    return isDarkTheme() ? '#334155' : '#e2e8f0';
+}}
+
+function getPlotlyConfig(titleText) {{
+    const textColor = getTextColor();
+    const gridColor = getGridColor();
+    return {{
+        title: {{
+            text: titleText,
+            font: {{ color: textColor }}
+        }},
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: {{ color: textColor }},
+        xaxis: {{ 
+            gridcolor: gridColor, 
+            tickfont: {{ color: textColor }},
+            linecolor: gridColor
+        }},
+        yaxis: {{ 
+            gridcolor: gridColor, 
+            tickfont: {{ color: textColor }},
+            linecolor: gridColor
+        }}
+    }};
+}}
 
 //=============================
 // Selector municipios
@@ -383,26 +484,18 @@ const colores = {{
 const selector=document.getElementById("municipio");
 
 municipios.forEach(m=>{{
-
     const op=document.createElement("option");
-
     op.value=m.nombre;
-
     op.textContent=m.nombre;
-
     selector.appendChild(op);
-
 }});
-
 
 //=============================
 // Grafico 1
 //=============================
 
 Plotly.newPlot(
-
 'g1',
-
 [{{
     x:municipios.map(x=>x.nombre),
     y:municipios.map(x=>x.votos),
@@ -411,15 +504,9 @@ Plotly.newPlot(
         color:colores.verde
     }}
 }}],
-
-{{
-
-title:'Votos Cámara por municipio',
-
-margin:{{t:50}}
-
-}}
-
+Object.assign(getPlotlyConfig('Votos Cámara por municipio'), {{
+    margin:{{t:50}}
+}})
 );
 
 function colorPartido(codigo){{
@@ -487,33 +574,19 @@ let datosTop=top10
 
 
 Plotly.newPlot(
-
 'g2',
-
 [{{
-
-x:datosTop.map(x=>x.votos),
-
-y:datosTop.map(x=>x.candidato),
-
-orientation:'h',
-
-type:'bar',
-
-marker:{{
-color:datosTop.map(x=>colorPartido(x.codigo_partido))
-}}
-
+    x:datosTop.map(x=>x.votos),
+    y:datosTop.map(x=>x.candidato),
+    orientation:'h',
+    type:'bar',
+    marker:{{
+        color:datosTop.map(x=>colorPartido(x.codigo_partido))
+    }}
 }}],
-
-{{
-
-title:'Top 10 candidatos Cámara',
-
-margin:{{l:250,t:50}}
-
-}}
-
+Object.assign(getPlotlyConfig('Top 10 candidatos Cámara'), {{
+    margin:{{l:250,t:50}}
+}})
 );
 
 
@@ -523,90 +596,145 @@ margin:{{l:250,t:50}}
 
 let datosRatio=ratio.filter(x=>x.municipio===muni);
 
-
 Plotly.newPlot(
-
 'g3',
-
 [{{
-
-x:datosRatio.map(x=>x.nombre_puesto),
-
-y:datosRatio.map(x=>x.ratio),
-
-mode:'lines+markers',
-
-line:{{color:colores.verde}}
-
+    x:datosRatio.map(x=>x.nombre_puesto),
+    y:datosRatio.map(x=>x.ratio),
+    mode:'lines+markers',
+    line:{{color:colores.verde}}
 }}],
-
-{{
-
-title:'Ratio Verde Senado/Cámara',
-
-shapes:[{{
-
-type:'line',
-
-x0:0,
-
-x1:1,
-
-xref:'paper',
-
-y0:1,
-
-y1:1,
-
-line:{{
-
-color:'red',
-
-dash:'dash'
-
-}}
-
-}}],
-
-margin:{{
-
-l:60,
-
-r:20,
-
-t:50,
-
-b:180
-
-}}
-
-}}
-
+Object.assign(getPlotlyConfig('Ratio Verde Senado/Cámara'), {{
+    shapes:[{{
+        type:'line',
+        x0:0,
+        x1:1,
+        xref:'paper',
+        y0:1,
+        y1:1,
+        line:{{
+            color:'red',
+            dash:'dash'
+        }}
+    }}],
+    margin:{{
+        l:60,
+        r:20,
+        t:50,
+        b:180
+    }}
+}})
 );
 
 }}
 
 selector.addEventListener(
-
 "change",
-
 actualizar
-
 );
 
+//=============================
+// Alternador Tema Oscuro / Claro
+//=============================
+
+const themeToggleBtn = document.getElementById("themeToggleBtn");
+
+function setTheme(theme) {{
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+    if (theme === "dark") {{
+        themeToggleBtn.textContent = "☀️ Modo Claro";
+    }} else {{
+        themeToggleBtn.textContent = "🌙 Modo Oscuro";
+    }}
+    
+    // Redibujar gráficos para aplicar los nuevos colores de fuente y fondo
+    const textColor = getTextColor();
+    const gridColor = getGridColor();
+    const update = {{
+        font: {{ color: textColor }},
+        xaxis: {{ 
+            gridcolor: gridColor, 
+            tickfont: {{ color: textColor }},
+            linecolor: gridColor
+        }},
+        yaxis: {{ 
+            gridcolor: gridColor, 
+            tickfont: {{ color: textColor }},
+            linecolor: gridColor
+        }},
+        title: {{
+            font: {{ color: textColor }}
+        }}
+    }};
+    
+    if (document.getElementById('g1').classList.contains('js-plotly-plot')) {{
+        Plotly.relayout('g1', update);
+    }}
+    if (document.getElementById('g2').classList.contains('js-plotly-plot')) {{
+        Plotly.relayout('g2', update);
+    }}
+    if (document.getElementById('g3').classList.contains('js-plotly-plot')) {{
+        Plotly.relayout('g3', update);
+    }}
+}}
+
+themeToggleBtn.addEventListener("click", () => {{
+    const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+}});
+
+// Detectar preferencia guardada o del sistema
+const savedTheme = localStorage.getItem("theme");
+const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+if (savedTheme) {{
+    setTheme(savedTheme);
+}} else if (systemPrefersDark) {{
+    setTheme("dark");
+}} else {{
+    setTheme("light");
+}}
+
+//=============================
+// Exportación a CSV
+////=============================
+
+document.getElementById("exportCsvBtn").addEventListener("click", () => {{
+    const muni = selector.value;
+    const datosTop = top10
+        .filter(x => x.municipio === muni)
+        .sort((a,b)=>b.votos-a.votos)
+        .slice(0,10);
+
+    let csvContent = "data:text/csv;charset=utf-8,\\uFEFF";
+    csvContent += "Municipio,Candidato,Partido,Votos\\n";
+
+    datosTop.forEach(row => {{
+        const candidatoEscaped = '"' + row.candidato.replace(/"/g, '""') + '"';
+        const partidoEscaped = '"' + row.partido.replace(/"/g, '""') + '"';
+        csvContent += row.municipio + ',' + candidatoEscaped + ',' + partidoEscaped + ',' + row.votos + '\\n';
+    }});
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "resultados_camara_" + muni.toLowerCase() + ".csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}});
 
 //=============================
 // Primer dibujo
 //=============================
 
 selector.selectedIndex=0;
-
 actualizar();
 
 </script>
 
 </body>
-
 </html>
 """
 

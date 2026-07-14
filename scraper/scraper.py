@@ -50,7 +50,8 @@ def leer_csv():
     # El documento CSV original tiene un separador de punto y coma, por lo que se debe especificar el parámetro sep=";" 
     df = pd.read_csv(
         INPUT_FILE,
-        sep=";"
+        sep=";",
+        encoding="utf-8"
     )
 
     print(f"Registros cargados: {len(df):,}")

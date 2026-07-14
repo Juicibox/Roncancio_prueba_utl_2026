@@ -45,7 +45,7 @@ def cargar_csv():
     Carga el archivo filtrado.
     """
 
-    return pd.read_csv(
+    df = pd.read_csv(
         CSV_FILE,
         sep=","
     )
