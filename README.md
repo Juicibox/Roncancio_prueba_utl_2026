@@ -13,7 +13,7 @@ Analista de Datos con experiencia en Python, SQL, SQLite, ETL y visualización d
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/usuario/election-analytics.git
+git clone https://github.com/Juicibox/Roncancio_prueba_utl_2026
 cd election-analytics
 ```
 
