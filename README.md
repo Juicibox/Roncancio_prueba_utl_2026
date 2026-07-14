@@ -14,7 +14,7 @@ Analista de Datos con experiencia en Python, SQL, SQLite, ETL y visualización d
 
 ```bash
 git clone https://github.com/Juicibox/Roncancio_prueba_utl_2026
-cd election-analytics
+
 ```
 
 ### 2. Crear entorno virtual
