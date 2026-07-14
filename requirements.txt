@@ -4,5 +4,4 @@ numpy
 matplotlib
 plotly
 sqlite3
-beautifulsoup4
 lxml

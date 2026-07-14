@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS resultados (
 
     codigo_municipio INTEGER NOT NULL,
     corporacion TEXT NOT NULL,
+    nombre_candidato TEXT NOT NULL,
 
     zona INTEGER NOT NULL,
     puesto INTEGER NOT NULL,

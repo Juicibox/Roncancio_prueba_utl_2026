@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Election Analytics Dashboard</title>
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    padding:25px;
+    background:#f5f7fa;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+h1{
+    margin:0;
+    color:#1f2937;
+}
+
+h2{
+    margin-top:0;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-top:25px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 3px 10px rgba(0,0,0,.08);
+    text-align:center;
+}
+
+.card h3{
+    margin:0;
+    color:#666;
+}
+
+.card h1{
+    margin-top:10px;
+}
+
+.panel{
+    background:white;
+    margin-top:20px;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 3px 10px rgba(0,0,0,.08);
+}
+
+select{
+    padding:8px;
+    font-size:16px;
+}
+
+#g1,#g2,#g3{
+    width:100%;
+    height:450px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🗳️ Análisis de Resultados Electorales </h1>
+
+<p style="color:#666">
+Análisis de resultados electorales • Boyacá
+</p>
+
+<div class="cards">
+
+<div class="card">
+<h3>Municipios</h3>
+<h1>4</h1>
+</div>
+
+<div class="card">
+<h3>Candidatos</h3>
+<h1>100</h1>
+</div>
+
+<div class="card">
+<h3>Partidos</h3>
+<h1>30</h1>
+</div>
+
+<div class="card">
+<h3>Registros</h3>
+<h1>61</h1>
+</div>
+
+</div>
+
+<div class="panel">
+
+<h2>Comparativo votos Cámara</h2>
+
+<div id="g1"></div>
+
+</div>
+
+<div class="panel">
+
+<h2>Municipio</h2>
+
+<select id="municipio"></select>
+
+<br><br>
+
+<div id="liderCard"
+style="
+background:#f8fafc;
+padding:18px;
+border-left:8px solid #007C34;
+border-radius:10px;
+margin-bottom:20px;
+">
+
+<h3 style="margin:0;color:#666;">
+Partido líder Senado
+</h3>
+
+<h2 id="liderNombre" style="margin-top:10px;">
+-
+</h2>
+
+<h3 id="liderVotos">
+-
+</h3>
+
+</div>
+
+<div id="g2"></div>
+
+</div>
+
+<div class="panel">
+
+<h2>Ratio Verde Senado / Cámara</h2>
+
+<div id="g3"></div>
+
+</div>
+
+<div style="
+margin-top:30px;
+text-align:center;
+color:gray;
+font-size:13px;
+">
+
+Election Analytics Challenge • Dashboard desarrollado con Python, SQLite y Plotly
+
+</div>
+
+<script>
+
+const municipios = [{"nombre": "TUNJA", "votos": 37822}, {"nombre": "DUITAMA", "votos": 32268}, {"nombre": "SOGAMOSO", "votos": 32231}, {"nombre": "PAIPA", "votos": 9799}];
+
+const top10 = [{"municipio": "DUITAMA", "candidato": "HECTOR DAVID CHAPARRO CHAPARRO", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 2653}, {"municipio": "DUITAMA", "candidato": "VOTOS EN BLANCO TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 1327}, {"municipio": "DUITAMA", "candidato": "JAIME RAUL SALAMANCA TORRES", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 1319}, {"municipio": "DUITAMA", "candidato": "HERNEL DAVID ORTEGA GOMEZ", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 896}, {"municipio": "DUITAMA", "candidato": "RAMIRO BARRAGAN ADAME", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 878}, {"municipio": "DUITAMA", "candidato": "YAMIT NOE HURTADO NEIRA", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 751}, {"municipio": "DUITAMA", "candidato": "INGRID MARLEN SOGAMOSO ALFONSO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 666}, {"municipio": "DUITAMA", "candidato": "NANCY YANETH ZAPATA PACHON", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 626}, {"municipio": "DUITAMA", "candidato": "VOTOS NULOS TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 621}, {"municipio": "DUITAMA", "candidato": "JICLY ESGARDO MUTIS ISAZA", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 613}, {"municipio": "DUITAMA", "candidato": "EDUAR ALEXIS TRIANA RINCON", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 542}, {"municipio": "DUITAMA", "candidato": "JOSE DARIO MAHECHA CASTILLO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 531}, {"municipio": "DUITAMA", "candidato": "JAIRO ENRIQUE CASTIBLANCO PARRA", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 522}, {"municipio": "DUITAMA", "candidato": "DELCI DEL CARMEN URBANO", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 490}, {"municipio": "DUITAMA", "candidato": "WILDER IVAN SUESCA OCHOA", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 481}, {"municipio": "DUITAMA", "candidato": "FABIAN CAMILO ROJAS BARRERA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 474}, {"municipio": "DUITAMA", "candidato": "DIANA PAOLA HERRERA NUÑEZ", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 445}, {"municipio": "DUITAMA", "candidato": "HECTOR JOSUE CAMACHO ACOSTA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 362}, {"municipio": "DUITAMA", "candidato": "OSCAR LEONARDO AVILA ROMERO", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 342}, {"municipio": "DUITAMA", "candidato": "VICENTE ANIBAL OJEDA MARTINEZ", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 326}, {"municipio": "DUITAMA", "candidato": "VIVIAN ANDREA NIETO FLOREZ", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 312}, {"municipio": "DUITAMA", "candidato": "GLORIA CECILIA PALACIOS GUASTAR", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 303}, {"municipio": "DUITAMA", "candidato": "VOTOS NO MARCADOS TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 270}, {"municipio": "DUITAMA", "candidato": "JHONATAN DAVID HOLGUIN CRUZ", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 248}, {"municipio": "DUITAMA", "candidato": "ADELINDA NUMPAQUE SARMIENTO", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 235}, {"municipio": "DUITAMA", "candidato": "FREDY ALEXANDER GARZON ROJAS", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 168}, {"municipio": "DUITAMA", "candidato": "WILLIAM DONATO GOMEZ", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 148}, {"municipio": "DUITAMA", "candidato": "KENDA LUCIA CALDERA GARAVITO", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 144}, {"municipio": "DUITAMA", "candidato": "NADIA ALEXANDRA CARREÑO AVELLA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 144}, {"municipio": "DUITAMA", "candidato": "NICOLAS FELIPE URBANO VILLAMIL", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 139}, {"municipio": "DUITAMA", "candidato": "OSCAR YOVANY MONTENEGRO SALCEDO", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 135}, {"municipio": "DUITAMA", "candidato": "LAURA CRISTINA MONROY BAYONA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 125}, {"municipio": "DUITAMA", "candidato": "JOHN ALBERTO MORENO GALINDO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 118}, {"municipio": "DUITAMA", "candidato": "YURY NEILL DIAZ ARANGUREN", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 89}, {"municipio": "DUITAMA", "candidato": "NUBIA JACQUELINE CARO PEREZ", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 82}, {"municipio": "DUITAMA", "candidato": "CAMILO ANDRES CAICEDO SILVA", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 73}, {"municipio": "DUITAMA", "candidato": "GIOVANNY ANDRES GOMEZ PALOMINO", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 62}, {"municipio": "DUITAMA", "candidato": "HUMPHREY ROA SARMIENTO", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 60}, {"municipio": "DUITAMA", "candidato": "EDUARDO DAVID SUAREZ MORENO", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 55}, {"municipio": "DUITAMA", "candidato": "LIBI PUERTO GRANADOS", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 55}, {"municipio": "DUITAMA", "candidato": "OLGA LUCIA CRUZ CUEVAS", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 51}, {"municipio": "DUITAMA", "candidato": "OLGA NIÑO ROJAS", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 51}, {"municipio": "DUITAMA", "candidato": "JAVIER ARAQUE ELAICA", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 50}, {"municipio": "DUITAMA", "candidato": "RUMALDO ROJAS RAMIREZ", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 40}, {"municipio": "DUITAMA", "candidato": "RICARDO ANTONIO AGUDELO GUIZA", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 38}, {"municipio": "DUITAMA", "candidato": "MANUEL STEVEN ALVAREZ PULIDO", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 35}, {"municipio": "DUITAMA", "candidato": "CAROLINA GEIRINGER ORTEGA", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 29}, {"municipio": "DUITAMA", "candidato": "GRACIELA RAMIREZ MONROY", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 29}, {"municipio": "DUITAMA", "candidato": "VOTOS EN BLANCO AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 26}, {"municipio": "DUITAMA", "candidato": "VOTOS EN BLANCO INDIGENAS", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 20}, {"municipio": "DUITAMA", "candidato": "DIEGO ARMANDO SANCHEZ ARBOLEDA", "codigo_partido": 6079, "partido": "C.C. DE LA COMUNIDAD NEGRA DE LA VEREDA EL ESFUERZO", "votos": 18}, {"municipio": "DUITAMA", "candidato": "EDGAR FERNANDO FARFAN CORZO", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 16}, {"municipio": "DUITAMA", "candidato": "JORGE IVAN MINA LASSO", "codigo_partido": 6106, "partido": "CONSEJO COMUNITARIO MANUEL ZAPATA OLIVELLA DE SAN ANTERO", "votos": 16}, {"municipio": "DUITAMA", "candidato": "JOSE DE LOS ANGELES FERNANDEZ PALACIOS", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 14}, {"municipio": "DUITAMA", "candidato": "LAYONETH GRANDAS VILLAMIL", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 13}, {"municipio": "DUITAMA", "candidato": "VOTOS NULOS INDIGENAS", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 10}, {"municipio": "DUITAMA", "candidato": "VOTOS NO MARCADOS AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 8}, {"municipio": "DUITAMA", "candidato": "JORGE ANDRES GONZALEZ SILVA", "codigo_partido": 6106, "partido": "CONSEJO COMUNITARIO MANUEL ZAPATA OLIVELLA DE SAN ANTERO", "votos": 6}, {"municipio": "DUITAMA", "candidato": "BENILDO ESTUPIÑAN SOLIS", "codigo_partido": 25, "partido": "PARTIDO ECOLOGISTA COLOMBIANO", "votos": 3}, {"municipio": "DUITAMA", "candidato": "CARLOS MARIO CALVO LARGO", "codigo_partido": 6018, "partido": "MOVIMIENTO UNIDAD EN MINGA POR COLOMBIA", "votos": 3}, {"municipio": "DUITAMA", "candidato": "JOSE ROBERTO MEJIA CASTRO", "codigo_partido": 6184, "partido": "ASOCONEG", "votos": 3}, {"municipio": "DUITAMA", "candidato": "LINDERMAN ADRADA LOPEZ", "codigo_partido": 12, "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 3}, {"municipio": "DUITAMA", "candidato": "MARCELINO CHINDOY CHICUNQUE", "codigo_partido": 6173, "partido": "PARTIDO INDÍGENA COLOMBIANO P.I.C", "votos": 3}, {"municipio": "DUITAMA", "candidato": "SILVERIO JOSE CALDERON DAZA", "codigo_partido": 6084, "partido": "CONSEJO COMUNITARIO DE PIZARRO \"CONCOPI\"", "votos": 3}, {"municipio": "DUITAMA", "candidato": "VOTOS NULOS AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 3}, {"municipio": "DUITAMA", "candidato": "DORIS ELENA JACANAMIJOY JACANAMIJOY", "codigo_partido": 12, "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 2}, {"municipio": "DUITAMA", "candidato": "HERNANDO MOSQUERA BARBOSA", "codigo_partido": 6079, "partido": "C.C. DE LA COMUNIDAD NEGRA DE LA VEREDA EL ESFUERZO", "votos": 2}, {"municipio": "DUITAMA", "candidato": "JAZMIN PATRICIA GARCIA CAICEDO", "codigo_partido": 6084, "partido": "CONSEJO COMUNITARIO DE PIZARRO \"CONCOPI\"", "votos": 2}, {"municipio": "DUITAMA", "candidato": "JORGE ELIECER GARCES FLOREZ", "codigo_partido": 6014, "partido": "CONSEJO COMUNITARIO DE LA COMUNIDAD NEGRA DE LIMONES", "votos": 2}, {"municipio": "DUITAMA", "candidato": "MAGNOLIA MORALES ZAMORA", "codigo_partido": 6173, "partido": "PARTIDO INDÍGENA COLOMBIANO P.I.C", "votos": 2}, {"municipio": "DUITAMA", "candidato": "ALEXANDER BOLAÑOS GARCIA", "codigo_partido": 6167, "partido": "CONSEJO COMUNITARIO DE COMUNIDADES NEGRAS CUENCA RÍO OVEJAS", "votos": 1}, {"municipio": "DUITAMA", "candidato": "DARLY PALACIOS QUEJADA", "codigo_partido": 6003, "partido": "EXPRESIÓN AFRO, AMBIENTAL Y CULTURAL COLOMBIA CON DIGNIDAD", "votos": 1}, {"municipio": "DUITAMA", "candidato": "DINA LUZ BENITEZ BALCEIRO", "codigo_partido": 6046, "partido": "ASOCIACIÓN AFRODESCENDIENTE PACÍFICO POR LA PAZ", "votos": 1}, {"municipio": "DUITAMA", "candidato": "ISMAEL MAESTRE SIMACA", "codigo_partido": 6210, "partido": "AFROSLIBRES", "votos": 1}, {"municipio": "DUITAMA", "candidato": "JENIFER TATIANA MOSQUERA BARRERA", "codigo_partido": 6079, "partido": "C.C. DE LA COMUNIDAD NEGRA DE LA VEREDA EL ESFUERZO", "votos": 1}, {"municipio": "DUITAMA", "candidato": "LUZMILA CORTINEZ DURAN", "codigo_partido": 6184, "partido": "ASOCONEG", "votos": 1}, {"municipio": "DUITAMA", "candidato": "OSWALDO JOSE OCHOA ALBOR", "codigo_partido": 6210, "partido": "AFROSLIBRES", "votos": 1}, {"municipio": "DUITAMA", "candidato": "VALENTINA GUTIERREZ ARAUJO", "codigo_partido": 12, "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 1}, {"municipio": "PAIPA", "candidato": "YAMIT NOE HURTADO NEIRA", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 2320}, {"municipio": "PAIPA", "candidato": "JAIME RAUL SALAMANCA TORRES", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 756}, {"municipio": "PAIPA", "candidato": "HECTOR DAVID CHAPARRO CHAPARRO", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 695}, {"municipio": "PAIPA", "candidato": "EDUAR ALEXIS TRIANA RINCON", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 397}, {"municipio": "PAIPA", "candidato": "WILDER IVAN SUESCA OCHOA", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 374}, {"municipio": "PAIPA", "candidato": "VOTOS NULOS TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 289}, {"municipio": "PAIPA", "candidato": "VOTOS EN BLANCO TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 268}, {"municipio": "PAIPA", "candidato": "RAMIRO BARRAGAN ADAME", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 208}, {"municipio": "PAIPA", "candidato": "NANCY YANETH ZAPATA PACHON", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 159}, {"municipio": "PAIPA", "candidato": "OSCAR LEONARDO AVILA ROMERO", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 154}, {"municipio": "PAIPA", "candidato": "OSCAR YOVANY MONTENEGRO SALCEDO", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 117}, {"municipio": "PAIPA", "candidato": "VOTOS NO MARCADOS TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 113}, {"municipio": "PAIPA", "candidato": "INGRID MARLEN SOGAMOSO ALFONSO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 112}, {"municipio": "PAIPA", "candidato": "HERNEL DAVID ORTEGA GOMEZ", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 108}, {"municipio": "PAIPA", "candidato": "DIANA PAOLA HERRERA NUÑEZ", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 104}, {"municipio": "PAIPA", "candidato": "DELCI DEL CARMEN URBANO", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 93}, {"municipio": "PAIPA", "candidato": "JICLY ESGARDO MUTIS ISAZA", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 91}, {"municipio": "PAIPA", "candidato": "JOSE DARIO MAHECHA CASTILLO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 82}, {"municipio": "PAIPA", "candidato": "VIVIAN ANDREA NIETO FLOREZ", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 81}, {"municipio": "PAIPA", "candidato": "ADELINDA NUMPAQUE SARMIENTO", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 71}, {"municipio": "PAIPA", "candidato": "FABIAN CAMILO ROJAS BARRERA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 69}, {"municipio": "PAIPA", "candidato": "JAIRO ENRIQUE CASTIBLANCO PARRA", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 69}, {"municipio": "PAIPA", "candidato": "FREDY ALEXANDER GARZON ROJAS", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 67}, {"municipio": "PAIPA", "candidato": "GLORIA CECILIA PALACIOS GUASTAR", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 67}, {"municipio": "PAIPA", "candidato": "WILLIAM DONATO GOMEZ", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 54}, {"municipio": "PAIPA", "candidato": "CAMILO ANDRES CAICEDO SILVA", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 43}, {"municipio": "PAIPA", "candidato": "HECTOR JOSUE CAMACHO ACOSTA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 41}, {"municipio": "PAIPA", "candidato": "JHONATAN DAVID HOLGUIN CRUZ", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 41}, {"municipio": "PAIPA", "candidato": "LAURA CRISTINA MONROY BAYONA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 39}, {"municipio": "PAIPA", "candidato": "NADIA ALEXANDRA CARREÑO AVELLA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 34}, {"municipio": "PAIPA", "candidato": "NICOLAS FELIPE URBANO VILLAMIL", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 33}, {"municipio": "PAIPA", "candidato": "JOHN ALBERTO MORENO GALINDO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 32}, {"municipio": "PAIPA", "candidato": "VICENTE ANIBAL OJEDA MARTINEZ", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 32}, {"municipio": "PAIPA", "candidato": "YURY NEILL DIAZ ARANGUREN", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 29}, {"municipio": "PAIPA", "candidato": "NUBIA JACQUELINE CARO PEREZ", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 28}, {"municipio": "PAIPA", "candidato": "LIBI PUERTO GRANADOS", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 26}, {"municipio": "PAIPA", "candidato": "HUMPHREY ROA SARMIENTO", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 24}, {"municipio": "PAIPA", "candidato": "RICARDO ANTONIO AGUDELO GUIZA", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 23}, {"municipio": "PAIPA", "candidato": "JAVIER ARAQUE ELAICA", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 20}, {"municipio": "PAIPA", "candidato": "KENDA LUCIA CALDERA GARAVITO", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 19}, {"municipio": "PAIPA", "candidato": "EDGAR FERNANDO FARFAN CORZO", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 17}, {"municipio": "PAIPA", "candidato": "CAROLINA GEIRINGER ORTEGA", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 12}, {"municipio": "PAIPA", "candidato": "EDUARDO DAVID SUAREZ MORENO", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 12}, {"municipio": "PAIPA", "candidato": "OLGA LUCIA CRUZ CUEVAS", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 11}, {"municipio": "PAIPA", "candidato": "GIOVANNY ANDRES GOMEZ PALOMINO", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 10}, {"municipio": "PAIPA", "candidato": "GRACIELA RAMIREZ MONROY", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 7}, {"municipio": "PAIPA", "candidato": "MANUEL STEVEN ALVAREZ PULIDO", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 6}, {"municipio": "PAIPA", "candidato": "OLGA NIÑO ROJAS", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 5}, {"municipio": "PAIPA", "candidato": "RUMALDO ROJAS RAMIREZ", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 5}, {"municipio": "PAIPA", "candidato": "VOTOS EN BLANCO AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 4}, {"municipio": "PAIPA", "candidato": "VOTOS NULOS AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 4}, {"municipio": "PAIPA", "candidato": "JOSE DE LOS ANGELES FERNANDEZ PALACIOS", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 3}, {"municipio": "PAIPA", "candidato": "LAYONETH GRANDAS VILLAMIL", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 2}, {"municipio": "PAIPA", "candidato": "VOTOS NO MARCADOS AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 2}, {"municipio": "PAIPA", "candidato": "CAMILO RIVERA SOTO", "codigo_partido": 6050, "partido": "CONSEJO COMUNITARIO AFROZABALETAS", "votos": 1}, {"municipio": "PAIPA", "candidato": "DIANA PAOLA RAMOS MEDINA", "codigo_partido": 6220, "partido": "CONSEJO COMUNITARIO DE QUINAMAYO", "votos": 1}, {"municipio": "PAIPA", "candidato": "DIEGO ARMANDO SANCHEZ ARBOLEDA", "codigo_partido": 6079, "partido": "C.C. DE LA COMUNIDAD NEGRA DE LA VEREDA EL ESFUERZO", "votos": 1}, {"municipio": "PAIPA", "candidato": "JAZMIN PATRICIA GARCIA CAICEDO", "codigo_partido": 6084, "partido": "CONSEJO COMUNITARIO DE PIZARRO \"CONCOPI\"", "votos": 1}, {"municipio": "PAIPA", "candidato": "JORGE ANDRES GONZALEZ SILVA", "codigo_partido": 6106, "partido": "CONSEJO COMUNITARIO MANUEL ZAPATA OLIVELLA DE SAN ANTERO", "votos": 1}, {"municipio": "PAIPA", "candidato": "JORGE IVAN MINA LASSO", "codigo_partido": 6106, "partido": "CONSEJO COMUNITARIO MANUEL ZAPATA OLIVELLA DE SAN ANTERO", "votos": 1}, {"municipio": "PAIPA", "candidato": "MAGNOLIA MORALES ZAMORA", "codigo_partido": 6173, "partido": "PARTIDO INDÍGENA COLOMBIANO P.I.C", "votos": 1}, {"municipio": "PAIPA", "candidato": "MARCELINO CHINDOY CHICUNQUE", "codigo_partido": 6173, "partido": "PARTIDO INDÍGENA COLOMBIANO P.I.C", "votos": 1}, {"municipio": "PAIPA", "candidato": "VOTOS EN BLANCO INDIGENAS", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "HECTOR DAVID CHAPARRO CHAPARRO", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 3052}, {"municipio": "SOGAMOSO", "candidato": "RAMIRO BARRAGAN ADAME", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 1577}, {"municipio": "SOGAMOSO", "candidato": "VOTOS EN BLANCO TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 1330}, {"municipio": "SOGAMOSO", "candidato": "DIANA PAOLA HERRERA NUÑEZ", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 1235}, {"municipio": "SOGAMOSO", "candidato": "NADIA ALEXANDRA CARREÑO AVELLA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 995}, {"municipio": "SOGAMOSO", "candidato": "JAIME RAUL SALAMANCA TORRES", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 937}, {"municipio": "SOGAMOSO", "candidato": "VOTOS NULOS TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 794}, {"municipio": "SOGAMOSO", "candidato": "FABIAN CAMILO ROJAS BARRERA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 742}, {"municipio": "SOGAMOSO", "candidato": "OSCAR LEONARDO AVILA ROMERO", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 723}, {"municipio": "SOGAMOSO", "candidato": "JAIRO ENRIQUE CASTIBLANCO PARRA", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 719}, {"municipio": "SOGAMOSO", "candidato": "YURY NEILL DIAZ ARANGUREN", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 688}, {"municipio": "SOGAMOSO", "candidato": "YAMIT NOE HURTADO NEIRA", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 666}, {"municipio": "SOGAMOSO", "candidato": "JOSE DARIO MAHECHA CASTILLO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 595}, {"municipio": "SOGAMOSO", "candidato": "GLORIA CECILIA PALACIOS GUASTAR", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 592}, {"municipio": "SOGAMOSO", "candidato": "NANCY YANETH ZAPATA PACHON", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 567}, {"municipio": "SOGAMOSO", "candidato": "EDUAR ALEXIS TRIANA RINCON", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 565}, {"municipio": "SOGAMOSO", "candidato": "JICLY ESGARDO MUTIS ISAZA", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 504}, {"municipio": "SOGAMOSO", "candidato": "MANUEL STEVEN ALVAREZ PULIDO", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 502}, {"municipio": "SOGAMOSO", "candidato": "DELCI DEL CARMEN URBANO", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 485}, {"municipio": "SOGAMOSO", "candidato": "WILLIAM DONATO GOMEZ", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 403}, {"municipio": "SOGAMOSO", "candidato": "JHONATAN DAVID HOLGUIN CRUZ", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 399}, {"municipio": "SOGAMOSO", "candidato": "INGRID MARLEN SOGAMOSO ALFONSO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 375}, {"municipio": "SOGAMOSO", "candidato": "WILDER IVAN SUESCA OCHOA", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 352}, {"municipio": "SOGAMOSO", "candidato": "VIVIAN ANDREA NIETO FLOREZ", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 330}, {"municipio": "SOGAMOSO", "candidato": "VOTOS NO MARCADOS TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 293}, {"municipio": "SOGAMOSO", "candidato": "ADELINDA NUMPAQUE SARMIENTO", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 273}, {"municipio": "SOGAMOSO", "candidato": "HECTOR JOSUE CAMACHO ACOSTA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 251}, {"municipio": "SOGAMOSO", "candidato": "HERNEL DAVID ORTEGA GOMEZ", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 230}, {"municipio": "SOGAMOSO", "candidato": "FREDY ALEXANDER GARZON ROJAS", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 176}, {"municipio": "SOGAMOSO", "candidato": "LAURA CRISTINA MONROY BAYONA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 170}, {"municipio": "SOGAMOSO", "candidato": "VICENTE ANIBAL OJEDA MARTINEZ", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 168}, {"municipio": "SOGAMOSO", "candidato": "OSCAR YOVANY MONTENEGRO SALCEDO", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 161}, {"municipio": "SOGAMOSO", "candidato": "NICOLAS FELIPE URBANO VILLAMIL", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 151}, {"municipio": "SOGAMOSO", "candidato": "JOHN ALBERTO MORENO GALINDO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 126}, {"municipio": "SOGAMOSO", "candidato": "KENDA LUCIA CALDERA GARAVITO", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 109}, {"municipio": "SOGAMOSO", "candidato": "GIOVANNY ANDRES GOMEZ PALOMINO", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 99}, {"municipio": "SOGAMOSO", "candidato": "NUBIA JACQUELINE CARO PEREZ", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 93}, {"municipio": "SOGAMOSO", "candidato": "CAMILO ANDRES CAICEDO SILVA", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 83}, {"municipio": "SOGAMOSO", "candidato": "LIBI PUERTO GRANADOS", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 76}, {"municipio": "SOGAMOSO", "candidato": "OLGA NIÑO ROJAS", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 69}, {"municipio": "SOGAMOSO", "candidato": "RICARDO ANTONIO AGUDELO GUIZA", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 67}, {"municipio": "SOGAMOSO", "candidato": "EDUARDO DAVID SUAREZ MORENO", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 63}, {"municipio": "SOGAMOSO", "candidato": "HUMPHREY ROA SARMIENTO", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 55}, {"municipio": "SOGAMOSO", "candidato": "JAVIER ARAQUE ELAICA", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 55}, {"municipio": "SOGAMOSO", "candidato": "RUMALDO ROJAS RAMIREZ", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 55}, {"municipio": "SOGAMOSO", "candidato": "GRACIELA RAMIREZ MONROY", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 43}, {"municipio": "SOGAMOSO", "candidato": "OLGA LUCIA CRUZ CUEVAS", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 40}, {"municipio": "SOGAMOSO", "candidato": "VOTOS EN BLANCO AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 33}, {"municipio": "SOGAMOSO", "candidato": "EDGAR FERNANDO FARFAN CORZO", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 29}, {"municipio": "SOGAMOSO", "candidato": "CAROLINA GEIRINGER ORTEGA", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 28}, {"municipio": "SOGAMOSO", "candidato": "VOTOS EN BLANCO INDIGENAS", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 16}, {"municipio": "SOGAMOSO", "candidato": "LAYONETH GRANDAS VILLAMIL", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 13}, {"municipio": "SOGAMOSO", "candidato": "VOTOS NO MARCADOS AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 12}, {"municipio": "SOGAMOSO", "candidato": "VOTOS NULOS AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 11}, {"municipio": "SOGAMOSO", "candidato": "JOSE DE LOS ANGELES FERNANDEZ PALACIOS", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 10}, {"municipio": "SOGAMOSO", "candidato": "JORGE IVAN MINA LASSO", "codigo_partido": 6106, "partido": "CONSEJO COMUNITARIO MANUEL ZAPATA OLIVELLA DE SAN ANTERO", "votos": 8}, {"municipio": "SOGAMOSO", "candidato": "VALENTINA GUTIERREZ ARAUJO", "codigo_partido": 12, "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 6}, {"municipio": "SOGAMOSO", "candidato": "DORIS ELENA JACANAMIJOY JACANAMIJOY", "codigo_partido": 12, "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 5}, {"municipio": "SOGAMOSO", "candidato": "PACIANO ASPRILLA ARBOLEDA", "codigo_partido": 6084, "partido": "CONSEJO COMUNITARIO DE PIZARRO \"CONCOPI\"", "votos": 5}, {"municipio": "SOGAMOSO", "candidato": "DIEGO ARMANDO SANCHEZ ARBOLEDA", "codigo_partido": 6079, "partido": "C.C. DE LA COMUNIDAD NEGRA DE LA VEREDA EL ESFUERZO", "votos": 4}, {"municipio": "SOGAMOSO", "candidato": "VOTOS NULOS INDIGENAS", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 4}, {"municipio": "SOGAMOSO", "candidato": "JORGE ANDRES GONZALEZ SILVA", "codigo_partido": 6106, "partido": "CONSEJO COMUNITARIO MANUEL ZAPATA OLIVELLA DE SAN ANTERO", "votos": 3}, {"municipio": "SOGAMOSO", "candidato": "MAGNOLIA MORALES ZAMORA", "codigo_partido": 6173, "partido": "PARTIDO INDÍGENA COLOMBIANO P.I.C", "votos": 3}, {"municipio": "SOGAMOSO", "candidato": "CRUZ ENEIDA QUIÑONES TENORIO", "codigo_partido": 6167, "partido": "CONSEJO COMUNITARIO DE COMUNIDADES NEGRAS CUENCA RÍO OVEJAS", "votos": 2}, {"municipio": "SOGAMOSO", "candidato": "DARLY PALACIOS QUEJADA", "codigo_partido": 6003, "partido": "EXPRESIÓN AFRO, AMBIENTAL Y CULTURAL COLOMBIA CON DIGNIDAD", "votos": 2}, {"municipio": "SOGAMOSO", "candidato": "HERNANDO MOSQUERA BARBOSA", "codigo_partido": 6079, "partido": "C.C. DE LA COMUNIDAD NEGRA DE LA VEREDA EL ESFUERZO", "votos": 2}, {"municipio": "SOGAMOSO", "candidato": "JORGE ELIECER GARCES FLOREZ", "codigo_partido": 6014, "partido": "CONSEJO COMUNITARIO DE LA COMUNIDAD NEGRA DE LIMONES", "votos": 2}, {"municipio": "SOGAMOSO", "candidato": "LORENA CENITH DE LA CRUZ RODRIGUEZ", "codigo_partido": 6106, "partido": "CONSEJO COMUNITARIO MANUEL ZAPATA OLIVELLA DE SAN ANTERO", "votos": 2}, {"municipio": "SOGAMOSO", "candidato": "MARCELINO CHINDOY CHICUNQUE", "codigo_partido": 6173, "partido": "PARTIDO INDÍGENA COLOMBIANO P.I.C", "votos": 2}, {"municipio": "SOGAMOSO", "candidato": "AIDA PETRONA SUAREZ SANTOS", "codigo_partido": 6018, "partido": "MOVIMIENTO UNIDAD EN MINGA POR COLOMBIA", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "ALEXANDER BOLAÑOS GARCIA", "codigo_partido": 6167, "partido": "CONSEJO COMUNITARIO DE COMUNIDADES NEGRAS CUENCA RÍO OVEJAS", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "AMALIA ROSA CAMPO NAVARRO", "codigo_partido": 6167, "partido": "CONSEJO COMUNITARIO DE COMUNIDADES NEGRAS CUENCA RÍO OVEJAS", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "CARLOS MARIO CALVO LARGO", "codigo_partido": 6018, "partido": "MOVIMIENTO UNIDAD EN MINGA POR COLOMBIA", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "DINA LUZ BENITEZ BALCEIRO", "codigo_partido": 6046, "partido": "ASOCIACIÓN AFRODESCENDIENTE PACÍFICO POR LA PAZ", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "JHONY APARICIO RAMIREZ", "codigo_partido": 6173, "partido": "PARTIDO INDÍGENA COLOMBIANO P.I.C", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "JOSE SANTIAGO CASTAÑEDA VALENCIA", "codigo_partido": 6230, "partido": "ASTECA", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "KARINA DEL CARMEN MARTINEZ GONZALEZ", "codigo_partido": 6016, "partido": "ASOCIACIÓN ÉTNICA MUNDO DIVERSO INTERCULTURAL", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "LENIN JESUS MENDOZA PEREZ", "codigo_partido": 6184, "partido": "ASOCONEG", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "LINDERMAN ADRADA LOPEZ", "codigo_partido": 12, "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "LINER CAMPO TEJEDOR", "codigo_partido": 25, "partido": "PARTIDO ECOLOGISTA COLOMBIANO", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "LUZMILA CORTINEZ DURAN", "codigo_partido": 6184, "partido": "ASOCONEG", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "OMAR BONILLA GARCIA", "codigo_partido": 6003, "partido": "EXPRESIÓN AFRO, AMBIENTAL Y CULTURAL COLOMBIA CON DIGNIDAD", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "RUBEN DAVID SALINA CASSIANI", "codigo_partido": 6224, "partido": "CONSEJO COMUNITARIO KUSUTOMA - GENDE COKUMALU", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "SILVERIO JOSE CALDERON DAZA", "codigo_partido": 6084, "partido": "CONSEJO COMUNITARIO DE PIZARRO \"CONCOPI\"", "votos": 1}, {"municipio": "SOGAMOSO", "candidato": "VOTOS NO MARCADOS INDIGENAS", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 1}, {"municipio": "TUNJA", "candidato": "RAMIRO BARRAGAN ADAME", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 1879}, {"municipio": "TUNJA", "candidato": "JAIME RAUL SALAMANCA TORRES", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 1749}, {"municipio": "TUNJA", "candidato": "YAMIT NOE HURTADO NEIRA", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 1718}, {"municipio": "TUNJA", "candidato": "VOTOS EN BLANCO TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 1573}, {"municipio": "TUNJA", "candidato": "INGRID MARLEN SOGAMOSO ALFONSO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 1332}, {"municipio": "TUNJA", "candidato": "FABIAN CAMILO ROJAS BARRERA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 1331}, {"municipio": "TUNJA", "candidato": "WILDER IVAN SUESCA OCHOA", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 1239}, {"municipio": "TUNJA", "candidato": "JOSE DARIO MAHECHA CASTILLO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 1058}, {"municipio": "TUNJA", "candidato": "HECTOR DAVID CHAPARRO CHAPARRO", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 1024}, {"municipio": "TUNJA", "candidato": "OSCAR LEONARDO AVILA ROMERO", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 995}, {"municipio": "TUNJA", "candidato": "VOTOS NULOS TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 906}, {"municipio": "TUNJA", "candidato": "JAIRO ENRIQUE CASTIBLANCO PARRA", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 818}, {"municipio": "TUNJA", "candidato": "EDUAR ALEXIS TRIANA RINCON", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 738}, {"municipio": "TUNJA", "candidato": "VICENTE ANIBAL OJEDA MARTINEZ", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 679}, {"municipio": "TUNJA", "candidato": "VIVIAN ANDREA NIETO FLOREZ", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 664}, {"municipio": "TUNJA", "candidato": "JICLY ESGARDO MUTIS ISAZA", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 584}, {"municipio": "TUNJA", "candidato": "DIANA PAOLA HERRERA NUÑEZ", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 532}, {"municipio": "TUNJA", "candidato": "HECTOR JOSUE CAMACHO ACOSTA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 513}, {"municipio": "TUNJA", "candidato": "ADELINDA NUMPAQUE SARMIENTO", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 498}, {"municipio": "TUNJA", "candidato": "NANCY YANETH ZAPATA PACHON", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 492}, {"municipio": "TUNJA", "candidato": "DELCI DEL CARMEN URBANO", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 491}, {"municipio": "TUNJA", "candidato": "JHONATAN DAVID HOLGUIN CRUZ", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 341}, {"municipio": "TUNJA", "candidato": "HERNEL DAVID ORTEGA GOMEZ", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 326}, {"municipio": "TUNJA", "candidato": "JAVIER ARAQUE ELAICA", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 298}, {"municipio": "TUNJA", "candidato": "JOHN ALBERTO MORENO GALINDO", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 293}, {"municipio": "TUNJA", "candidato": "VOTOS NO MARCADOS TERRITORIAL", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 270}, {"municipio": "TUNJA", "candidato": "GLORIA CECILIA PALACIOS GUASTAR", "codigo_partido": 3093, "partido": "PARTIDO CONSERVADOR - MOVIMIENTO SALVACIÓN NACIONAL", "votos": 255}, {"municipio": "TUNJA", "candidato": "FREDY ALEXANDER GARZON ROJAS", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 250}, {"municipio": "TUNJA", "candidato": "NICOLAS FELIPE URBANO VILLAMIL", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 247}, {"municipio": "TUNJA", "candidato": "OSCAR YOVANY MONTENEGRO SALCEDO", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 223}, {"municipio": "TUNJA", "candidato": "LAURA CRISTINA MONROY BAYONA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 216}, {"municipio": "TUNJA", "candidato": "YURY NEILL DIAZ ARANGUREN", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 213}, {"municipio": "TUNJA", "candidato": "NADIA ALEXANDRA CARREÑO AVELLA", "codigo_partido": 3094, "partido": "CR-NUEVO LIBERALISMO", "votos": 200}, {"municipio": "TUNJA", "candidato": "WILLIAM DONATO GOMEZ", "codigo_partido": 4, "partido": "PARTIDO ALIANZA VERDE", "votos": 184}, {"municipio": "TUNJA", "candidato": "KENDA LUCIA CALDERA GARAVITO", "codigo_partido": 11, "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 179}, {"municipio": "TUNJA", "candidato": "HUMPHREY ROA SARMIENTO", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 148}, {"municipio": "TUNJA", "candidato": "NUBIA JACQUELINE CARO PEREZ", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 131}, {"municipio": "TUNJA", "candidato": "GIOVANNY ANDRES GOMEZ PALOMINO", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 128}, {"municipio": "TUNJA", "candidato": "GRACIELA RAMIREZ MONROY", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 128}, {"municipio": "TUNJA", "candidato": "CAMILO ANDRES CAICEDO SILVA", "codigo_partido": 1, "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 126}, {"municipio": "TUNJA", "candidato": "EDUARDO DAVID SUAREZ MORENO", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 124}, {"municipio": "TUNJA", "candidato": "VOTOS EN BLANCO AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 65}, {"municipio": "TUNJA", "candidato": "RICARDO ANTONIO AGUDELO GUIZA", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 62}, {"municipio": "TUNJA", "candidato": "MANUEL STEVEN ALVAREZ PULIDO", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 60}, {"municipio": "TUNJA", "candidato": "LIBI PUERTO GRANADOS", "codigo_partido": 3092, "partido": "PARTIDO DE LA U - PARTIDO MIRA", "votos": 58}, {"municipio": "TUNJA", "candidato": "OLGA LUCIA CRUZ CUEVAS", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 58}, {"municipio": "TUNJA", "candidato": "LAYONETH GRANDAS VILLAMIL", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 55}, {"municipio": "TUNJA", "candidato": "RUMALDO ROJAS RAMIREZ", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 43}, {"municipio": "TUNJA", "candidato": "CAROLINA GEIRINGER ORTEGA", "codigo_partido": 3109, "partido": "ALMA - OXÍGENO", "votos": 42}, {"municipio": "TUNJA", "candidato": "OLGA NIÑO ROJAS", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 41}, {"municipio": "TUNJA", "candidato": "EDGAR FERNANDO FARFAN CORZO", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 40}, {"municipio": "TUNJA", "candidato": "VOTOS EN BLANCO INDIGENAS", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 34}, {"municipio": "TUNJA", "candidato": "VOTOS NO MARCADOS AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 25}, {"municipio": "TUNJA", "candidato": "JOSE DE LOS ANGELES FERNANDEZ PALACIOS", "codigo_partido": 17, "partido": "PARTIDO POLÍTICO DIGNIDAD & COMPROMISO", "votos": 24}, {"municipio": "TUNJA", "candidato": "VALENTINA GUTIERREZ ARAUJO", "codigo_partido": 12, "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 17}, {"municipio": "TUNJA", "candidato": "DIEGO ARMANDO SANCHEZ ARBOLEDA", "codigo_partido": 6079, "partido": "C.C. DE LA COMUNIDAD NEGRA DE LA VEREDA EL ESFUERZO", "votos": 16}, {"municipio": "TUNJA", "candidato": "VOTOS NULOS AFRO-DESCENDIENTES", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 16}, {"municipio": "TUNJA", "candidato": "JORGE IVAN MINA LASSO", "codigo_partido": 6106, "partido": "CONSEJO COMUNITARIO MANUEL ZAPATA OLIVELLA DE SAN ANTERO", "votos": 12}, {"municipio": "TUNJA", "candidato": "VOTOS NULOS INDIGENAS", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 12}, {"municipio": "TUNJA", "candidato": "LINDERMAN ADRADA LOPEZ", "codigo_partido": 12, "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 11}, {"municipio": "TUNJA", "candidato": "MARCELINO CHINDOY CHICUNQUE", "codigo_partido": 6173, "partido": "PARTIDO INDÍGENA COLOMBIANO P.I.C", "votos": 10}, {"municipio": "TUNJA", "candidato": "VOTOS NO MARCADOS INDIGENAS", "codigo_partido": 0, "partido": "CANDIDATOS TOTALES", "votos": 7}, {"municipio": "TUNJA", "candidato": "ALEXANDER BOLAÑOS GARCIA", "codigo_partido": 6167, "partido": "CONSEJO COMUNITARIO DE COMUNIDADES NEGRAS CUENCA RÍO OVEJAS", "votos": 5}, {"municipio": "TUNJA", "candidato": "AMALIA ROSA CAMPO NAVARRO", "codigo_partido": 6167, "partido": "CONSEJO COMUNITARIO DE COMUNIDADES NEGRAS CUENCA RÍO OVEJAS", "votos": 5}, {"municipio": "TUNJA", "candidato": "CRUZ ENEIDA QUIÑONES TENORIO", "codigo_partido": 6167, "partido": "CONSEJO COMUNITARIO DE COMUNIDADES NEGRAS CUENCA RÍO OVEJAS", "votos": 5}, {"municipio": "TUNJA", "candidato": "OSWALDO JOSE OCHOA ALBOR", "codigo_partido": 6210, "partido": "AFROSLIBRES", "votos": 5}, {"municipio": "TUNJA", "candidato": "BENILDO ESTUPIÑAN SOLIS", "codigo_partido": 25, "partido": "PARTIDO ECOLOGISTA COLOMBIANO", "votos": 4}, {"municipio": "TUNJA", "candidato": "DORIS ELENA JACANAMIJOY JACANAMIJOY", "codigo_partido": 12, "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 4}, {"municipio": "TUNJA", "candidato": "ISMAEL MAESTRE SIMACA", "codigo_partido": 6210, "partido": "AFROSLIBRES", "votos": 4}, {"municipio": "TUNJA", "candidato": "JORGE ELIECER GARCES FLOREZ", "codigo_partido": 6014, "partido": "CONSEJO COMUNITARIO DE LA COMUNIDAD NEGRA DE LIMONES", "votos": 4}, {"municipio": "TUNJA", "candidato": "JORGE ANDRES GONZALEZ SILVA", "codigo_partido": 6106, "partido": "CONSEJO COMUNITARIO MANUEL ZAPATA OLIVELLA DE SAN ANTERO", "votos": 3}, {"municipio": "TUNJA", "candidato": "LINER CAMPO TEJEDOR", "codigo_partido": 25, "partido": "PARTIDO ECOLOGISTA COLOMBIANO", "votos": 3}, {"municipio": "TUNJA", "candidato": "MAGNOLIA MORALES ZAMORA", "codigo_partido": 6173, "partido": "PARTIDO INDÍGENA COLOMBIANO P.I.C", "votos": 3}, {"municipio": "TUNJA", "candidato": "OMAR BONILLA GARCIA", "codigo_partido": 6003, "partido": "EXPRESIÓN AFRO, AMBIENTAL Y CULTURAL COLOMBIA CON DIGNIDAD", "votos": 3}, {"municipio": "TUNJA", "candidato": "AIDA PETRONA SUAREZ SANTOS", "codigo_partido": 6018, "partido": "MOVIMIENTO UNIDAD EN MINGA POR COLOMBIA", "votos": 2}, {"municipio": "TUNJA", "candidato": "CAMILO RIVERA SOTO", "codigo_partido": 6050, "partido": "CONSEJO COMUNITARIO AFROZABALETAS", "votos": 2}, {"municipio": "TUNJA", "candidato": "DARLY PALACIOS QUEJADA", "codigo_partido": 6003, "partido": "EXPRESIÓN AFRO, AMBIENTAL Y CULTURAL COLOMBIA CON DIGNIDAD", "votos": 2}, {"municipio": "TUNJA", "candidato": "DIANA PAOLA RAMOS MEDINA", "codigo_partido": 6220, "partido": "CONSEJO COMUNITARIO DE QUINAMAYO", "votos": 2}, {"municipio": "TUNJA", "candidato": "HERNANDO MOSQUERA BARBOSA", "codigo_partido": 6079, "partido": "C.C. DE LA COMUNIDAD NEGRA DE LA VEREDA EL ESFUERZO", "votos": 2}, {"municipio": "TUNJA", "candidato": "JAZMIN PATRICIA GARCIA CAICEDO", "codigo_partido": 6084, "partido": "CONSEJO COMUNITARIO DE PIZARRO \"CONCOPI\"", "votos": 2}, {"municipio": "TUNJA", "candidato": "ALEX WALTER DEUSA", "codigo_partido": 6002, "partido": "CONSEJO COMUNITARIO VEREDAS UNIDAS POR UN BIEN COMÚN", "votos": 1}, {"municipio": "TUNJA", "candidato": "ALMA EVELYN PHYSCO CANENCIO", "codigo_partido": 25, "partido": "PARTIDO ECOLOGISTA COLOMBIANO", "votos": 1}, {"municipio": "TUNJA", "candidato": "BRANIS ENRIQUE AVILA ORTIZ", "codigo_partido": 6179, "partido": "COMUNIDAD AFROCOLOMBIANA DE LA SIERRA NEVADA", "votos": 1}, {"municipio": "TUNJA", "candidato": "CARLOS MARIO CALVO LARGO", "codigo_partido": 6018, "partido": "MOVIMIENTO UNIDAD EN MINGA POR COLOMBIA", "votos": 1}, {"municipio": "TUNJA", "candidato": "DUVAN STIWAR CASTRO MACHADO", "codigo_partido": 6164, "partido": "CONSEJO COMUNITARIO AFROÉTNICO DE RISARALDA", "votos": 1}, {"municipio": "TUNJA", "candidato": "ESTEFANIA ARENILLA GUERRA", "codigo_partido": 6002, "partido": "CONSEJO COMUNITARIO VEREDAS UNIDAS POR UN BIEN COMÚN", "votos": 1}, {"municipio": "TUNJA", "candidato": "JENIFER TATIANA MOSQUERA BARRERA", "codigo_partido": 6079, "partido": "C.C. DE LA COMUNIDAD NEGRA DE LA VEREDA EL ESFUERZO", "votos": 1}, {"municipio": "TUNJA", "candidato": "JHONY APARICIO RAMIREZ", "codigo_partido": 6173, "partido": "PARTIDO INDÍGENA COLOMBIANO P.I.C", "votos": 1}, {"municipio": "TUNJA", "candidato": "JOSE SANTIAGO CASTAÑEDA VALENCIA", "codigo_partido": 6230, "partido": "ASTECA", "votos": 1}, {"municipio": "TUNJA", "candidato": "LEONARDO ARNEDO MENDOZA", "codigo_partido": 6014, "partido": "CONSEJO COMUNITARIO DE LA COMUNIDAD NEGRA DE LIMONES", "votos": 1}, {"municipio": "TUNJA", "candidato": "LORENA CENITH DE LA CRUZ RODRIGUEZ", "codigo_partido": 6106, "partido": "CONSEJO COMUNITARIO MANUEL ZAPATA OLIVELLA DE SAN ANTERO", "votos": 1}, {"municipio": "TUNJA", "candidato": "PACIANO ASPRILLA ARBOLEDA", "codigo_partido": 6084, "partido": "CONSEJO COMUNITARIO DE PIZARRO \"CONCOPI\"", "votos": 1}, {"municipio": "TUNJA", "candidato": "PEDRO ANTONIO ECHEVERRY RAMIREZ", "codigo_partido": 6003, "partido": "EXPRESIÓN AFRO, AMBIENTAL Y CULTURAL COLOMBIA CON DIGNIDAD", "votos": 1}];
+
+const lider = [{"municipio": "DUITAMA", "partido": "PACTO HISTÓRICO SENADO", "votos": 9446}, {"municipio": "DUITAMA", "partido": "ALIANZA POR COLOMBIA", "votos": 5656}, {"municipio": "DUITAMA", "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 4986}, {"municipio": "DUITAMA", "partido": "PARTIDO CONSERVADOR COLOMBIANO", "votos": 2336}, {"municipio": "DUITAMA", "partido": "COALICIÓN CAMBIO RADICAL - ALMA", "votos": 2045}, {"municipio": "DUITAMA", "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 2035}, {"municipio": "DUITAMA", "partido": "AHORA COLOMBIA", "votos": 1925}, {"municipio": "DUITAMA", "partido": "MOVIMIENTO SALVACIÓN NACIONAL", "votos": 1911}, {"municipio": "DUITAMA", "partido": "PARTIDO DE LA UNIÓN POR LA GENTE - PARTIDO DE LA U", "votos": 609}, {"municipio": "DUITAMA", "partido": "FRENTE AMPLIO UNITARIO", "votos": 568}, {"municipio": "DUITAMA", "partido": "COALICIÓN FUERZA CIUDADANA", "votos": 234}, {"municipio": "DUITAMA", "partido": "LA LISTA DE OVIEDO - CON TODA POR COLOMBIA", "votos": 229}, {"municipio": "DUITAMA", "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 122}, {"municipio": "DUITAMA", "partido": "COLOMBIA SEGURA Y PRÓSPERA", "votos": 102}, {"municipio": "DUITAMA", "partido": "PARTIDO POLÍTICO OXÍGENO", "votos": 65}, {"municipio": "DUITAMA", "partido": "CREEMOS", "votos": 60}, {"municipio": "DUITAMA", "partido": "PATRIOTAS", "votos": 17}, {"municipio": "DUITAMA", "partido": "ASOCIACIÓN DE AUTORIDADES TRADICIONALES INDÍGENAS", "votos": 11}, {"municipio": "DUITAMA", "partido": "MOVIMIENTO AUTORIDADES INDÍGENAS DE COLOMBIA \"AICO\"", "votos": 10}, {"municipio": "DUITAMA", "partido": "ACMIZSAM", "votos": 5}, {"municipio": "DUITAMA", "partido": "MOVIMIENTO UNIDAD EN MINGA POR COLOMBIA", "votos": 4}, {"municipio": "DUITAMA", "partido": "ASOCIACIÓN NACIONAL INDÍGENA DE COLOMBIA \"ANIC\"", "votos": 2}, {"municipio": "DUITAMA", "partido": "ASOCIACIÓN DE CABILDOS INDÍGENAS POR COLOMBIA", "votos": 1}, {"municipio": "DUITAMA", "partido": "CABILDO INDÉGENA TEVIS", "votos": 1}, {"municipio": "DUITAMA", "partido": "MOVIMIENTO SI", "votos": 1}, {"municipio": "DUITAMA", "partido": "TRIETNICO GOBERNATIVO TRIGO", "votos": 1}, {"municipio": "PAIPA", "partido": "ALIANZA POR COLOMBIA", "votos": 2430}, {"municipio": "PAIPA", "partido": "PACTO HISTÓRICO SENADO", "votos": 1958}, {"municipio": "PAIPA", "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 1447}, {"municipio": "PAIPA", "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 1025}, {"municipio": "PAIPA", "partido": "PARTIDO CONSERVADOR COLOMBIANO", "votos": 966}, {"municipio": "PAIPA", "partido": "AHORA COLOMBIA", "votos": 625}, {"municipio": "PAIPA", "partido": "MOVIMIENTO SALVACIÓN NACIONAL", "votos": 442}, {"municipio": "PAIPA", "partido": "COALICIÓN CAMBIO RADICAL - ALMA", "votos": 427}, {"municipio": "PAIPA", "partido": "PARTIDO DE LA UNIÓN POR LA GENTE - PARTIDO DE LA U", "votos": 136}, {"municipio": "PAIPA", "partido": "FRENTE AMPLIO UNITARIO", "votos": 102}, {"municipio": "PAIPA", "partido": "LA LISTA DE OVIEDO - CON TODA POR COLOMBIA", "votos": 52}, {"municipio": "PAIPA", "partido": "COALICIÓN FUERZA CIUDADANA", "votos": 49}, {"municipio": "PAIPA", "partido": "CREEMOS", "votos": 28}, {"municipio": "PAIPA", "partido": "PARTIDO POLÍTICO OXÍGENO", "votos": 18}, {"municipio": "PAIPA", "partido": "COLOMBIA SEGURA Y PRÓSPERA", "votos": 8}, {"municipio": "PAIPA", "partido": "PATRIOTAS", "votos": 6}, {"municipio": "PAIPA", "partido": "ASOCIACIÓN DE AUTORIDADES TRADICIONALES INDÍGENAS", "votos": 2}, {"municipio": "PAIPA", "partido": "ASOCIACIÓN NACIONAL INDÍGENA DE COLOMBIA \"ANIC\"", "votos": 2}, {"municipio": "PAIPA", "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 2}, {"municipio": "PAIPA", "partido": "MOVIMIENTO AUTORIDADES INDÍGENAS DE COLOMBIA \"AICO\"", "votos": 1}, {"municipio": "SOGAMOSO", "partido": "PACTO HISTÓRICO SENADO", "votos": 8091}, {"municipio": "SOGAMOSO", "partido": "ALIANZA POR COLOMBIA", "votos": 5187}, {"municipio": "SOGAMOSO", "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 4488}, {"municipio": "SOGAMOSO", "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 3466}, {"municipio": "SOGAMOSO", "partido": "MOVIMIENTO SALVACIÓN NACIONAL", "votos": 3351}, {"municipio": "SOGAMOSO", "partido": "PARTIDO CONSERVADOR COLOMBIANO", "votos": 1987}, {"municipio": "SOGAMOSO", "partido": "AHORA COLOMBIA", "votos": 1853}, {"municipio": "SOGAMOSO", "partido": "COALICIÓN CAMBIO RADICAL - ALMA", "votos": 1681}, {"municipio": "SOGAMOSO", "partido": "PARTIDO DE LA UNIÓN POR LA GENTE - PARTIDO DE LA U", "votos": 858}, {"municipio": "SOGAMOSO", "partido": "FRENTE AMPLIO UNITARIO", "votos": 452}, {"municipio": "SOGAMOSO", "partido": "LA LISTA DE OVIEDO - CON TODA POR COLOMBIA", "votos": 189}, {"municipio": "SOGAMOSO", "partido": "COALICIÓN FUERZA CIUDADANA", "votos": 125}, {"municipio": "SOGAMOSO", "partido": "COLOMBIA SEGURA Y PRÓSPERA", "votos": 91}, {"municipio": "SOGAMOSO", "partido": "CREEMOS", "votos": 51}, {"municipio": "SOGAMOSO", "partido": "PARTIDO POLÍTICO OXÍGENO", "votos": 47}, {"municipio": "SOGAMOSO", "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 46}, {"municipio": "SOGAMOSO", "partido": "PATRIOTAS", "votos": 21}, {"municipio": "SOGAMOSO", "partido": "ASOCIACIÓN DE AUTORIDADES TRADICIONALES INDÍGENAS", "votos": 5}, {"municipio": "SOGAMOSO", "partido": "ASOCIACIÓN DE CABILDOS INDÍGENAS POR COLOMBIA", "votos": 5}, {"municipio": "SOGAMOSO", "partido": "CABILDO INDÉGENA TEVIS", "votos": 3}, {"municipio": "SOGAMOSO", "partido": "MOVIMIENTO AUTORIDADES INDÍGENAS DE COLOMBIA \"AICO\"", "votos": 2}, {"municipio": "SOGAMOSO", "partido": "MOVIMIENTO SI", "votos": 2}, {"municipio": "SOGAMOSO", "partido": "ACMIZSAM", "votos": 1}, {"municipio": "SOGAMOSO", "partido": "MOVIMIENTO UNIDAD EN MINGA POR COLOMBIA", "votos": 1}, {"municipio": "SOGAMOSO", "partido": "TRIETNICO GOBERNATIVO TRIGO", "votos": 1}, {"municipio": "TUNJA", "partido": "PACTO HISTÓRICO SENADO", "votos": 9285}, {"municipio": "TUNJA", "partido": "ALIANZA POR COLOMBIA", "votos": 8523}, {"municipio": "TUNJA", "partido": "PARTIDO CENTRO DEMOCRÁTICO", "votos": 4491}, {"municipio": "TUNJA", "partido": "PARTIDO LIBERAL COLOMBIANO", "votos": 3809}, {"municipio": "TUNJA", "partido": "PARTIDO CONSERVADOR COLOMBIANO", "votos": 3405}, {"municipio": "TUNJA", "partido": "MOVIMIENTO SALVACIÓN NACIONAL", "votos": 2410}, {"municipio": "TUNJA", "partido": "COALICIÓN CAMBIO RADICAL - ALMA", "votos": 2407}, {"municipio": "TUNJA", "partido": "AHORA COLOMBIA", "votos": 2400}, {"municipio": "TUNJA", "partido": "FRENTE AMPLIO UNITARIO", "votos": 1119}, {"municipio": "TUNJA", "partido": "PARTIDO DE LA UNIÓN POR LA GENTE - PARTIDO DE LA U", "votos": 1103}, {"municipio": "TUNJA", "partido": "COALICIÓN FUERZA CIUDADANA", "votos": 396}, {"municipio": "TUNJA", "partido": "MOVIMIENTO ALTERNATIVO INDÍGENA Y SOCIAL \"MAIS\"", "votos": 304}, {"municipio": "TUNJA", "partido": "LA LISTA DE OVIEDO - CON TODA POR COLOMBIA", "votos": 290}, {"municipio": "TUNJA", "partido": "CREEMOS", "votos": 112}, {"municipio": "TUNJA", "partido": "MOVIMIENTO AUTORIDADES INDÍGENAS DE COLOMBIA \"AICO\"", "votos": 85}, {"municipio": "TUNJA", "partido": "PARTIDO POLÍTICO OXÍGENO", "votos": 57}, {"municipio": "TUNJA", "partido": "COLOMBIA SEGURA Y PRÓSPERA", "votos": 35}, {"municipio": "TUNJA", "partido": "ASOCIACIÓN DE AUTORIDADES TRADICIONALES INDÍGENAS", "votos": 28}, {"municipio": "TUNJA", "partido": "PATRIOTAS", "votos": 27}, {"municipio": "TUNJA", "partido": "ASOCIACIÓN DE CABILDOS INDÍGENAS POR COLOMBIA", "votos": 14}, {"municipio": "TUNJA", "partido": "MOVIMIENTO UNIDAD EN MINGA POR COLOMBIA", "votos": 14}, {"municipio": "TUNJA", "partido": "ASOCIACIÓN NACIONAL INDÍGENA DE COLOMBIA \"ANIC\"", "votos": 7}, {"municipio": "TUNJA", "partido": "MOVIMIENTO SI", "votos": 5}, {"municipio": "TUNJA", "partido": "CABILDO INDÉGENA TEVIS", "votos": 3}, {"municipio": "TUNJA", "partido": "ACMIZSAM", "votos": 2}];
+
+const ratio = [{"municipio": "DUITAMA", "puesto": 1, "nombre_puesto": "COLEGIO SALESIANO", "votos_camara": 371, "votos_senado": 441, "ratio": 1.1887}, {"municipio": "DUITAMA", "puesto": 1, "nombre_puesto": "COLEGIO BOYACA", "votos_camara": 388, "votos_senado": 540, "ratio": 1.3918}, {"municipio": "DUITAMA", "puesto": 2, "nombre_puesto": "ANTIGUO TERMINAL DE TRANSPORTE", "votos_camara": 418, "votos_senado": 527, "ratio": 1.2608}, {"municipio": "DUITAMA", "puesto": 2, "nombre_puesto": "COL GUILLERMO LEON VALENCIA", "votos_camara": 423, "votos_senado": 720, "ratio": 1.7021}, {"municipio": "DUITAMA", "puesto": 3, "nombre_puesto": "COL SANTO T DE AQUINO SD PRIA 1", "votos_camara": 310, "votos_senado": 373, "ratio": 1.2032}, {"municipio": "DUITAMA", "puesto": 3, "nombre_puesto": "U.P.T.C.", "votos_camara": 301, "votos_senado": 504, "ratio": 1.6744}, {"municipio": "DUITAMA", "puesto": 4, "nombre_puesto": "COL JESUS EUCARISTIA", "votos_camara": 252, "votos_senado": 364, "ratio": 1.4444}, {"municipio": "DUITAMA", "puesto": 4, "nombre_puesto": "COL.FRANCISCO DE PAULA SANTAN", "votos_camara": 109, "votos_senado": 188, "ratio": 1.7248}, {"municipio": "DUITAMA", "puesto": 5, "nombre_puesto": "COL SANTO T DE AQUINO SD PRIA 2", "votos_camara": 227, "votos_senado": 344, "ratio": 1.5154}, {"municipio": "DUITAMA", "puesto": 5, "nombre_puesto": "COLEGIO SIMON BOLIVAR", "votos_camara": 173, "votos_senado": 293, "ratio": 1.6936}, {"municipio": "DUITAMA", "puesto": 6, "nombre_puesto": "COL LA NUEVA FAMILIA", "votos_camara": 365, "votos_senado": 498, "ratio": 1.3644}, {"municipio": "DUITAMA", "puesto": 6, "nombre_puesto": "PARQUE LA ESPERANZA", "votos_camara": 14, "votos_senado": 59, "ratio": 4.2143}, {"municipio": "DUITAMA", "puesto": 7, "nombre_puesto": "COLEGIO JAIRO ANIBAL NIÑO", "votos_camara": 165, "votos_senado": 159, "ratio": 0.9636}, {"municipio": "DUITAMA", "puesto": 7, "nombre_puesto": "SAN ANTONIO NORTE", "votos_camara": 62, "votos_senado": 81, "ratio": 1.3065}, {"municipio": "DUITAMA", "puesto": 10, "nombre_puesto": "SURBA Y BONZA", "votos_camara": 214, "votos_senado": 310, "ratio": 1.4486}, {"municipio": "DUITAMA", "puesto": 20, "nombre_puesto": "QUEBRADA DE BECERRA", "votos_camara": 52, "votos_senado": 51, "ratio": 0.9808}, {"municipio": "DUITAMA", "puesto": 40, "nombre_puesto": "EL CARMEN", "votos_camara": 7, "votos_senado": 7, "ratio": 1.0}, {"municipio": "DUITAMA", "puesto": 50, "nombre_puesto": "AVENDAÑOS", "votos_camara": 15, "votos_senado": 19, "ratio": 1.2667}, {"municipio": "DUITAMA", "puesto": 70, "nombre_puesto": "SALON COMUNAL TOCOGUA", "votos_camara": 62, "votos_senado": 77, "ratio": 1.2419}, {"municipio": "PAIPA", "puesto": 1, "nombre_puesto": "I.E.TOMAS VASQUEZ RODRIGUEZ", "votos_camara": 2018, "votos_senado": 1187, "ratio": 0.5882}, {"municipio": "PAIPA", "puesto": 1, "nombre_puesto": "COLISEO MUNICIPAL DE DEPORTES DE PAIPA", "votos_camara": 38, "votos_senado": 155, "ratio": 4.0789}, {"municipio": "PAIPA", "puesto": 1, "nombre_puesto": "PALERMO", "votos_camara": 2, "votos_senado": 10, "ratio": 5.0}, {"municipio": "PAIPA", "puesto": 2, "nombre_puesto": "I.E.EL ROSARIO SEDE CAMPESTRE", "votos_camara": 963, "votos_senado": 605, "ratio": 0.6282}, {"municipio": "PAIPA", "puesto": 2, "nombre_puesto": "I.E. EL ROSARIO SEDE CENTRAL", "votos_camara": 327, "votos_senado": 303, "ratio": 0.9266}, {"municipio": "PAIPA", "puesto": 15, "nombre_puesto": "EL VENADO", "votos_camara": 25, "votos_senado": 9, "ratio": 0.36}, {"municipio": "PAIPA", "puesto": 38, "nombre_puesto": "PANTANO DE VARGAS", "votos_camara": 246, "votos_senado": 161, "ratio": 0.6545}, {"municipio": "SOGAMOSO", "puesto": 1, "nombre_puesto": "IE INTEGRADO JOAQUIN GONZALEZ CAM", "votos_camara": 843, "votos_senado": 803, "ratio": 0.9526}, {"municipio": "SOGAMOSO", "puesto": 1, "nombre_puesto": "IE LIBERTADOR", "votos_camara": 29, "votos_senado": 192, "ratio": 6.6207}, {"municipio": "SOGAMOSO", "puesto": 1, "nombre_puesto": "COLEGIO CELCO", "votos_camara": 2, "votos_senado": 79, "ratio": 39.5}, {"municipio": "SOGAMOSO", "puesto": 2, "nombre_puesto": "COL REYES PATRIA", "votos_camara": 566, "votos_senado": 566, "ratio": 1.0}, {"municipio": "SOGAMOSO", "puesto": 2, "nombre_puesto": "IE MAGDALENA", "votos_camara": 343, "votos_senado": 465, "ratio": 1.3557}, {"municipio": "SOGAMOSO", "puesto": 3, "nombre_puesto": "UNIVERSIDAD DE BOYACA SEDE SOGAMOSO", "votos_camara": 665, "votos_senado": 631, "ratio": 0.9489}, {"municipio": "SOGAMOSO", "puesto": 3, "nombre_puesto": "IEPAGS SEDE ROSARIO", "votos_camara": 28, "votos_senado": 179, "ratio": 6.3929}, {"municipio": "SOGAMOSO", "puesto": 4, "nombre_puesto": "IE FRANCISCO DE PAULA SANTANDER", "votos_camara": 683, "votos_senado": 720, "ratio": 1.0542}, {"municipio": "SOGAMOSO", "puesto": 4, "nombre_puesto": "IE INSEANDES", "votos_camara": 38, "votos_senado": 117, "ratio": 3.0789}, {"municipio": "SOGAMOSO", "puesto": 5, "nombre_puesto": "COL NZADO GUSTAVO JIMENEZ", "votos_camara": 274, "votos_senado": 320, "ratio": 1.1679}, {"municipio": "SOGAMOSO", "puesto": 5, "nombre_puesto": "IE SUGAMUXI", "votos_camara": 295, "votos_senado": 418, "ratio": 1.4169}, {"municipio": "SOGAMOSO", "puesto": 6, "nombre_puesto": "COL POLITÉCNICO", "votos_camara": 509, "votos_senado": 554, "ratio": 1.0884}, {"municipio": "SOGAMOSO", "puesto": 7, "nombre_puesto": "IE SILVESTRE ARENAS", "votos_camara": 144, "votos_senado": 135, "ratio": 0.9375}, {"municipio": "TUNJA", "puesto": 1, "nombre_puesto": "COL. BOYACA FCO DE PAULA SANTANDER", "votos_camara": 974, "votos_senado": 982, "ratio": 1.0082}, {"municipio": "TUNJA", "puesto": 1, "nombre_puesto": "UNIVERSIDAD JUAN DE CASTELLANOS", "votos_camara": 259, "votos_senado": 438, "ratio": 1.6911}, {"municipio": "TUNJA", "puesto": 1, "nombre_puesto": "COLISEO CUBIERTO MUNICIPAL", "votos_camara": 1, "votos_senado": 90, "ratio": 90.0}, {"municipio": "TUNJA", "puesto": 2, "nombre_puesto": "I.T. GONZALO SUAREZ RENDON SEDE CENTRAL", "votos_camara": 528, "votos_senado": 560, "ratio": 1.0606}, {"municipio": "TUNJA", "puesto": 2, "nombre_puesto": "C.A.S.D. BARRIO SAN ANTONIO", "votos_camara": 109, "votos_senado": 192, "ratio": 1.7615}, {"municipio": "TUNJA", "puesto": 2, "nombre_puesto": "COLISEO MUNICIPAL COMFABOY", "votos_camara": 100, "votos_senado": 207, "ratio": 2.07}, {"municipio": "TUNJA", "puesto": 3, "nombre_puesto": "COL DE BOYACA SD JOSE IGNACIO DE MARQUEZ", "votos_camara": 493, "votos_senado": 522, "ratio": 1.0588}, {"municipio": "TUNJA", "puesto": 3, "nombre_puesto": "INEM CARLOS ARTURO TORRES SD CENTRAL", "votos_camara": 104, "votos_senado": 187, "ratio": 1.7981}, {"municipio": "TUNJA", "puesto": 4, "nombre_puesto": "IES JUAN CASTELLANOS SD CRISANTO LUQUE", "votos_camara": 932, "votos_senado": 905, "ratio": 0.971}, {"municipio": "TUNJA", "puesto": 4, "nombre_puesto": "IE LIBERTADOR SIMON BOLIVAR SEDE CENTRAL", "votos_camara": 9, "votos_senado": 95, "ratio": 10.5556}, {"municipio": "TUNJA", "puesto": 4, "nombre_puesto": "COLISEO I.R.D.ET", "votos_camara": 11, "votos_senado": 147, "ratio": 13.3636}, {"municipio": "TUNJA", "puesto": 5, "nombre_puesto": "AUDITORIO GUSTAVO M CASTELLANOS COMFABOY", "votos_camara": 714, "votos_senado": 786, "ratio": 1.1008}, {"municipio": "TUNJA", "puesto": 5, "nombre_puesto": "UNIVERSIDAD SANTO TOMAS", "votos_camara": 104, "votos_senado": 199, "ratio": 1.9135}, {"municipio": "TUNJA", "puesto": 6, "nombre_puesto": "COLEGIO SALESIANO MALDONADO", "votos_camara": 1083, "votos_senado": 1156, "ratio": 1.0674}, {"municipio": "TUNJA", "puesto": 6, "nombre_puesto": "COLISEO SAN ANTONIO", "votos_camara": 20, "votos_senado": 105, "ratio": 5.25}, {"municipio": "TUNJA", "puesto": 6, "nombre_puesto": "COLISEO UNIBOYACA", "votos_camara": 10, "votos_senado": 121, "ratio": 12.1}, {"municipio": "TUNJA", "puesto": 7, "nombre_puesto": "I.E GUSTAVO ROJAS PINILLA SD CENTRAL", "votos_camara": 705, "votos_senado": 755, "ratio": 1.0709}, {"municipio": "TUNJA", "puesto": 8, "nombre_puesto": "IE LIBERTADOR SIMON BOLIVAR SN FRANCISCO", "votos_camara": 421, "votos_senado": 445, "ratio": 1.057}, {"municipio": "TUNJA", "puesto": 9, "nombre_puesto": "I.E. SILVINO RODRIGUEZ SD MANZANARES", "votos_camara": 126, "votos_senado": 122, "ratio": 0.9683}, {"municipio": "TUNJA", "puesto": 10, "nombre_puesto": "IE NORMAL SUPERIOR SD JARDIN NACIONAL", "votos_camara": 259, "votos_senado": 291, "ratio": 1.1236}, {"municipio": "TUNJA", "puesto": 11, "nombre_puesto": "CTRO DE REHAB. INTEG. DE BOYACA - CRIB", "votos_camara": 9, "votos_senado": 8, "ratio": 0.8889}, {"municipio": "TUNJA", "puesto": 21, "nombre_puesto": "PUENTE DE BOYACA", "votos_camara": 53, "votos_senado": 36, "ratio": 0.6792}];
+
+
+//=============================
+// Colores
+//=============================
+
+const colores = {
+
+    verde:"#007C34",
+
+    pacto:"#7B2D8B",
+
+    centro:"#1E477D",
+
+    conservador:"#E07B00",
+
+    gris:"#4B5563"
+
+};
+
+
+//=============================
+// Selector municipios
+//=============================
+
+const selector=document.getElementById("municipio");
+
+municipios.forEach(m=>{
+
+    const op=document.createElement("option");
+
+    op.value=m.nombre;
+
+    op.textContent=m.nombre;
+
+    selector.appendChild(op);
+
+});
+
+
+//=============================
+// Grafico 1
+//=============================
+
+Plotly.newPlot(
+
+'g1',
+
+[{
+    x:municipios.map(x=>x.nombre),
+    y:municipios.map(x=>x.votos),
+    type:'bar',
+    marker:{
+        color:colores.verde
+    }
+}],
+
+{
+
+title:'Votos Cámara por municipio',
+
+margin:{t:50}
+
+}
+
+);
+
+function colorPartido(codigo){
+    codigo = Number(codigo);
+    switch(codigo){
+        // Liberal
+        case 1:
+            return "#D32F2F";
+
+        // Conservador
+        case 2:
+        case 3093:
+            return "#E07B00";
+
+        // Alianza Verde
+        case 4:
+        case 3020:
+            return "#007C34";
+
+        // Centro Democrático
+        case 11:
+            return "#1E477D";
+
+        // Pacto Histórico
+        case 3058:
+        case 3063:
+            return "#7B2D8B";
+
+        default:
+            return "#9CA3AF";
+    }
+}
+
+//=============================
+// Funcion actualizar
+//=============================
+
+function actualizar(){
+
+const muni=selector.value;
+
+//========================
+// Partido líder Senado
+//========================
+
+let liderMunicipio = lider
+    .filter(x => x.municipio === muni)
+    .sort((a,b)=>b.votos-a.votos)[0];
+
+document.getElementById("liderNombre").innerHTML =
+liderMunicipio.partido;
+
+document.getElementById("liderVotos").innerHTML =
+liderMunicipio.votos.toLocaleString()+" votos";
+
+
+//-----------------------------
+// TOP 10
+//-----------------------------
+
+let datosTop=top10
+.filter(x=>x.municipio===muni)
+.sort((a,b)=>b.votos-a.votos)
+.slice(0,10);
+
+
+Plotly.newPlot(
+
+'g2',
+
+[{
+
+x:datosTop.map(x=>x.votos),
+
+y:datosTop.map(x=>x.candidato),
+
+orientation:'h',
+
+type:'bar',
+
+marker:{
+color:datosTop.map(x=>colorPartido(x.codigo_partido))
+}
+
+}],
+
+{
+
+title:'Top 10 candidatos Cámara',
+
+margin:{l:250,t:50}
+
+}
+
+);
+
+
+//-----------------------------
+// Ratio Verde
+//-----------------------------
+
+let datosRatio=ratio.filter(x=>x.municipio===muni);
+
+
+Plotly.newPlot(
+
+'g3',
+
+[{
+
+x:datosRatio.map(x=>x.nombre_puesto),
+
+y:datosRatio.map(x=>x.ratio),
+
+mode:'lines+markers',
+
+line:{color:colores.verde}
+
+}],
+
+{
+
+title:'Ratio Verde Senado/Cámara',
+
+shapes:[{
+
+type:'line',
+
+x0:0,
+
+x1:1,
+
+xref:'paper',
+
+y0:1,
+
+y1:1,
+
+line:{
+
+color:'red',
+
+dash:'dash'
+
+}
+
+}],
+
+margin:{
+
+l:60,
+
+r:20,
+
+t:50,
+
+b:180
+
+}
+
+}
+
+);
+
+}
+
+selector.addEventListener(
+
+"change",
+
+actualizar
+
+);
+
+
+//=============================
+// Primer dibujo
+//=============================
+
+selector.selectedIndex=0;
+
+actualizar();
+
+</script>
+
+</body>
+
+</html>

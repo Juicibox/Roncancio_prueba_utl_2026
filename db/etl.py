@@ -178,6 +178,7 @@ def cargar_resultados(conn, df):
                 "COMUNOMBRE",
                 "PAR",
                 "CAN",
+                "CANNOMBRE",
                 "VOTOS"
             ]
         ].itertuples(index=False, name=None)
@@ -197,9 +198,10 @@ def cargar_resultados(conn, df):
                 comunidad,
                 codigo_partido,
                 codigo_candidato,
+                nombre_candidato,
                 votos
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             datos
         )
