@@ -185,7 +185,7 @@ Se desarrolló un dashboard HTML autocontenido con:
 - Top 10 candidatos por municipio.
 - Partido líder en Senado.
 - Ratio Verde Senado/Cámara.
-- Exportación de resultados en formato CSV.
+
 
 ### Visualizaciones
 
@@ -198,8 +198,7 @@ Se generaron:
 
 ## Bonus implementados
 
-### Índices SQLite (+2)
-
+### Índices SQLite 
 Se implementaron índices sobre:
 
 - municipio
@@ -209,7 +208,7 @@ Se implementaron índices sobre:
 
 Estos índices optimizan las consultas utilizadas por el dashboard y por los retos SQL.
 
-### Explicación del reto 3.3 (+2)
+### Explicación del reto 3.3 
 
 El Top de candidatos en Cámara no necesariamente coincide con el Top de atribución en Senado porque la atribución distribuye los votos del partido de Senado de manera proporcional a la votación obtenida por cada candidato en Cámara.
 
